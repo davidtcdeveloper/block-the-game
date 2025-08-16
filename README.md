@@ -4,7 +4,7 @@ A 2D falling block puzzle game for Android built with Kotlin and Jetpack Compose
 
 ## Features
 
-- **Classic Tetris Gameplay**: T-piece tetromino falling and rotating mechanics
+- **Classic Gameplay**: T-piece tetromino falling and rotating mechanics
 - **Responsive Design**: Adapts to different Android screen sizes
 - **Portrait Mode**: Optimized for vertical gameplay
 - **Touch Controls**: Intuitive button-based controls
