@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Quantum Blocks</string>
+    <string name="move_left">←</string>
+    <string name="move_right">→</string>
+    <string name="rotate">↻</string>
+    <string name="drop">↓</string>
+    <string name="game_over">Game Over</string>
+    <string name="restart">Restart</string>
+    <string name="score">Score</string>
+    <string name="level">Level</string>
+    <string name="final_score">Final Score: %1$d</string>
+    <string name="level_reached">Level Reached: %1$d</string>
+</resources>
