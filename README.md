@@ -1,4 +1,4 @@
-# Quantum Blocks - Android Tetris Game
+# Quantum Blocks - Android Game
 
 A 2D falling block puzzle game for Android built with Kotlin and Jetpack Compose.
 
