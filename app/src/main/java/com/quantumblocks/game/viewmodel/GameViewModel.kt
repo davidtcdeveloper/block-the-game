@@ -20,7 +20,8 @@ private const val SOFT_DROP_DELAY_MS = 50L
  */
 class GameViewModel(
     private val gameEngine: GameEngine,
-    private val coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope,
+    private val gameLoopFactory: (MutableStateFlow<GameState>) -> GameLoop
 ) : ViewModel() {
     
     private var softDropJob: Job? = null
@@ -43,8 +44,8 @@ class GameViewModel(
         val initialState = gameEngine.resetGame()
         _gameState.value = gameEngine.spawnPiece(initialState)
         
-        // Create a new GameLoop instance with the current game state
-        gameLoop = GameLoop(gameEngine, coroutineScope, _gameState)
+        // Create a new GameLoop instance using the factory with the current game state
+        gameLoop = gameLoopFactory(_gameState)
     }
     
     /**
