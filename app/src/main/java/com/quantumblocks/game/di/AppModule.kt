@@ -30,8 +30,8 @@ val appModule = module {
     }
     
     // Factory function for creating GameLoop instances
-    factory<(MutableStateFlow<GameState>) -> GameLoop> { 
-        { gameStateFlow -> GameLoop(get(), get(), gameStateFlow, get()) }
+    factory<(MutableStateFlow<GameState>) -> GameLoop> {
+        { gameStateFlow -> GameLoop(get(), gameStateFlow, get(), get()) }
     }
     
     // ViewModel factory for GameViewModel

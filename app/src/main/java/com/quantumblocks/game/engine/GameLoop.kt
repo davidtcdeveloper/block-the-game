@@ -13,9 +13,9 @@ import kotlinx.coroutines.launch
  */
 class GameLoop(
     private val gameEngine: GameEngine,
-    private val coroutineScope: CoroutineScope,
     private val gameStateFlow: MutableStateFlow<GameState>,
-    private val dispatcher: CoroutineDispatcher
+    coroutineScope: CoroutineScope,
+    dispatcher: CoroutineDispatcher,
 ) {
 
     // Launches the game job when the class is initialized
