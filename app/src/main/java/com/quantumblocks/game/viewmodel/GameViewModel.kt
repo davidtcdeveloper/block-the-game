@@ -3,6 +3,7 @@ package com.quantumblocks.game.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.quantumblocks.game.engine.GameEngine
+import com.quantumblocks.game.engine.GameLoop
 import com.quantumblocks.game.model.GameState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -17,10 +18,10 @@ private const val SOFT_DROP_DELAY_MS = 50L
  * ViewModel that manages the game state and user interactions
  */
 class GameViewModel(
-    private val gameEngine: GameEngine
+    private val gameEngine: GameEngine,
+    private val gameLoop: GameLoop
 ) : ViewModel() {
     
-    private var gameJob: Job? = null
     private var softDropJob: Job? = null
     
     private val _gameState = MutableStateFlow(GameState())
@@ -34,29 +35,13 @@ class GameViewModel(
      * Starts a new game
      */
     fun startNewGame() {
-        gameJob?.cancel()
+        gameLoop.stopGameLoop()
         softDropJob?.cancel()
         
         val initialState = gameEngine.resetGame()
         _gameState.value = gameEngine.spawnPiece(initialState)
         
-        startGameLoop()
-    }
-    
-    /**
-     * Starts the main game loop
-     */
-    private fun startGameLoop() {
-        gameJob = viewModelScope.launch {
-            while (!_gameState.value.gameOver) {
-                val fallDelay = gameEngine.getFallDelay(_gameState.value.level)
-                delay(fallDelay)
-                
-                if (!_gameState.value.gameOver) {
-                    _gameState.value = gameEngine.movePieceDown(_gameState.value)
-                }
-            }
-        }
+        gameLoop.startGameLoop(_gameState)
     }
     
     /**
@@ -114,7 +99,7 @@ class GameViewModel(
     
     override fun onCleared() {
         super.onCleared()
-        gameJob?.cancel()
+        gameLoop.stopGameLoop()
         softDropJob?.cancel()
     }
 }
