@@ -1,11 +1,11 @@
 package com.quantumblocks.game.engine
 
 import com.quantumblocks.game.model.GameState
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 /**
@@ -14,11 +14,12 @@ import kotlinx.coroutines.launch
 class GameLoop(
     private val gameEngine: GameEngine,
     private val coroutineScope: CoroutineScope,
-    private val gameStateFlow: MutableStateFlow<GameState>
+    private val gameStateFlow: MutableStateFlow<GameState>,
+    private val dispatcher: CoroutineDispatcher
 ) {
 
     // Launches the game job when the class is initialized
-    private var gameJob: Job = coroutineScope.launch {
+    private var gameJob: Job = coroutineScope.launch(dispatcher) {
         while (!gameStateFlow.value.gameOver) {
             val fallDelay = gameEngine.getFallDelay(gameStateFlow.value.level)
             delay(fallDelay)

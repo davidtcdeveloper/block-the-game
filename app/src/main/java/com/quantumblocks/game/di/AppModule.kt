@@ -4,6 +4,7 @@ import com.quantumblocks.game.engine.GameEngine
 import com.quantumblocks.game.engine.GameLoop
 import com.quantumblocks.game.model.GameState
 import com.quantumblocks.game.viewmodel.GameViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -22,10 +23,15 @@ val appModule = module {
     single<CoroutineScope> { 
         CoroutineScope(SupervisorJob() + Dispatchers.Main) 
     }
+
+    // Coroutine dispatcher for game loop
+    single<CoroutineDispatcher> {
+        Dispatchers.Default
+    }
     
     // Factory function for creating GameLoop instances
     factory<(MutableStateFlow<GameState>) -> GameLoop> { 
-        { gameStateFlow -> GameLoop(get(), get(), gameStateFlow) }
+        { gameStateFlow -> GameLoop(get(), get(), gameStateFlow, get()) }
     }
     
     // ViewModel factory for GameViewModel
