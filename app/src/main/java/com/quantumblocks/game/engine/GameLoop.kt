@@ -13,41 +13,33 @@ import kotlinx.coroutines.launch
  */
 class GameLoop(
     private val gameEngine: GameEngine,
-    private val coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope,
+    private val gameStateFlow: MutableStateFlow<GameState>
 ) {
-    
-    private var gameJob: Job? = null
-    
-    /**
-     * Starts the main game loop
-     */
-    fun startGameLoop(gameStateFlow: MutableStateFlow<GameState>) {
-        gameJob?.cancel()
-        
-        gameJob = coroutineScope.launch {
-            while (!gameStateFlow.value.gameOver) {
-                val fallDelay = gameEngine.getFallDelay(gameStateFlow.value.level)
-                delay(fallDelay)
-                
-                if (!gameStateFlow.value.gameOver) {
-                    gameStateFlow.value = gameEngine.movePieceDown(gameStateFlow.value)
-                }
+
+    // Launches the game job when the class is initialized
+    private var gameJob: Job = coroutineScope.launch {
+        while (!gameStateFlow.value.gameOver) {
+            val fallDelay = gameEngine.getFallDelay(gameStateFlow.value.level)
+            delay(fallDelay)
+
+            if (!gameStateFlow.value.gameOver) {
+                gameStateFlow.value = gameEngine.movePieceDown(gameStateFlow.value)
             }
         }
     }
-    
+
     /**
      * Stops the game loop
      */
     fun stopGameLoop() {
-        gameJob?.cancel()
-        gameJob = null
+        gameJob.cancel()
     }
     
     /**
      * Checks if the game loop is currently running
      */
     fun isRunning(): Boolean {
-        return gameJob?.isActive == true
+        return gameJob.isActive
     }
 }

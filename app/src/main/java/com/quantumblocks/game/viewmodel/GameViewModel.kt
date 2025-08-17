@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.quantumblocks.game.engine.GameEngine
 import com.quantumblocks.game.engine.GameLoop
 import com.quantumblocks.game.model.GameState
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,10 +20,11 @@ private const val SOFT_DROP_DELAY_MS = 50L
  */
 class GameViewModel(
     private val gameEngine: GameEngine,
-    private val gameLoop: GameLoop
+    private val coroutineScope: CoroutineScope
 ) : ViewModel() {
     
     private var softDropJob: Job? = null
+    private var gameLoop: GameLoop? = null
     
     private val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
@@ -35,13 +37,14 @@ class GameViewModel(
      * Starts a new game
      */
     fun startNewGame() {
-        gameLoop.stopGameLoop()
+        gameLoop?.stopGameLoop()
         softDropJob?.cancel()
         
         val initialState = gameEngine.resetGame()
         _gameState.value = gameEngine.spawnPiece(initialState)
         
-        gameLoop.startGameLoop(_gameState)
+        // Create a new GameLoop instance with the current game state
+        gameLoop = GameLoop(gameEngine, coroutineScope, _gameState)
     }
     
     /**
@@ -99,7 +102,7 @@ class GameViewModel(
     
     override fun onCleared() {
         super.onCleared()
-        gameLoop.stopGameLoop()
+        gameLoop?.stopGameLoop()
         softDropJob?.cancel()
     }
 }

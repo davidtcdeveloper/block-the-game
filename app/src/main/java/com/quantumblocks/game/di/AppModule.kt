@@ -21,11 +21,6 @@ val appModule = module {
         CoroutineScope(SupervisorJob() + Dispatchers.Main) 
     }
     
-    // Singleton instance of GameLoop
-    single<GameLoop> { 
-        GameLoop(get(), get()) 
-    }
-    
     // ViewModel factory for GameViewModel
     viewModel<GameViewModel> { 
         GameViewModel(get(), get()) 
