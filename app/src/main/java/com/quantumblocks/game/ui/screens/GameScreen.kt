@@ -15,19 +15,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.quantumblocks.game.ui.components.ControlPanel
 import com.quantumblocks.game.ui.components.GameBoard
 import com.quantumblocks.game.ui.components.GameOverDialog
 import com.quantumblocks.game.ui.components.ScoreDisplay
 import com.quantumblocks.game.viewmodel.GameViewModel
+import org.koin.androidx.compose.koinViewModel
 
 /**
  * Main game screen that displays the game board, controls, and score
  */
 @Composable
 fun GameScreen(
-    viewModel: GameViewModel = viewModel()
+    viewModel: GameViewModel = koinViewModel()
 ) {
     val gameState by viewModel.gameState.collectAsState()
     

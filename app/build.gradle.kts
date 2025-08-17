@@ -62,7 +62,14 @@ dependencies {
     implementation("androidx.compose.runtime:runtime")
     implementation("androidx.compose.runtime:runtime-livedata")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    
+    // Koin dependencies
+    implementation("io.insert-koin:koin-android:3.5.3")
+    implementation("io.insert-koin:koin-androidx-compose:3.5.3")
+    
     testImplementation("junit:junit:4.13.2")
+    testImplementation("io.insert-koin:koin-test:3.5.3")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2024.02.00"))

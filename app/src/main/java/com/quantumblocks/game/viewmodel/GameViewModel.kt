@@ -16,9 +16,10 @@ private const val SOFT_DROP_DELAY_MS = 50L
 /**
  * ViewModel that manages the game state and user interactions
  */
-class GameViewModel : ViewModel() {
+class GameViewModel(
+    private val gameEngine: GameEngine
+) : ViewModel() {
     
-    private val gameEngine = GameEngine()
     private var gameJob: Job? = null
     private var softDropJob: Job? = null
     
