@@ -7,17 +7,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.quantumblocks.game.model.GameState
 import com.quantumblocks.game.model.Piece
 import com.quantumblocks.game.model.Position
@@ -58,8 +55,10 @@ fun GameBoard(
             // Draw locked blocks
             drawLockedBlocks(gameState.board, cellWidth, cellHeight)
             
-            // Draw current piece
-            drawPiece(gameState.currentPiece, cellWidth, cellHeight)
+            // Draw current piece if it exists
+            gameState.currentPiece?.let { piece ->
+                drawPiece(piece, cellWidth, cellHeight)
+            }
         }
     }
 }
@@ -106,7 +105,8 @@ private fun DrawScope.drawLockedBlocks(
     cellWidth: Float,
     cellHeight: Float
 ) {
-    val blockColor = GameColors.Blue
+    // For now, locked blocks are a single color as per previous iterations.
+    val blockColor = GameColors.Blue 
     
     board.forEachIndexed { row, rowData ->
         rowData.forEachIndexed { col, hasBlock ->
@@ -140,7 +140,7 @@ private fun DrawScope.drawPiece(
     cellWidth: Float,
     cellHeight: Float
 ) {
-    val pieceColor = GameColors.Cyan
+    val pieceColor = piece.color
     
     piece.blocks.forEach { position ->
         val x = position.col * cellWidth
@@ -156,7 +156,7 @@ private fun DrawScope.drawPiece(
             
             // Draw piece border
             drawRect(
-                color = GameColors.White,
+                color = GameColors.White, // Consider a contrasting border or remove if colors are distinct enough
                 topLeft = Offset(x, y),
                 size = Size(cellWidth, cellHeight),
                 style = Stroke(width = 2f)
@@ -190,9 +190,12 @@ fun GameBoardWithBlocksPreview() {
         }
     }
     
+    // Create a sample piece for previewing
+    val samplePiece = Piece.createTPiece().move(Position(5, 3))
+    
     val gameState = GameState(
         board = boardWithBlocks,
-        currentPiece = Piece.createTPiece().move(Position(5, 3))
+        currentPiece = samplePiece
     )
     
     GameBoard(gameState = gameState)
