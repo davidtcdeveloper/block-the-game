@@ -30,32 +30,32 @@ class GameViewModel(
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
     private val pieceFactories = Piece.getAllPieceFactories()
-    private var pieceBag: MutableList<() -> Piece> = mutableListOf()
+    private var pieceCollection: MutableList<() -> Piece> = mutableListOf()
 
     init {
         startNewGame()
     }
 
-    // TODO: Rename from bag into collection
-    private fun fillPieceBag() {
-        pieceBag = pieceFactories.shuffled().toMutableList()
+    // Renamed from bag into collection
+    private fun fillPieceCollection() {
+        pieceCollection = pieceFactories.shuffled().toMutableList()
     }
 
-    private fun getNextPieceFromBag(): Piece {
-        if (pieceBag.isEmpty()) {
-            fillPieceBag()
+    private fun getNextPieceFromCollection(): Piece {
+        if (pieceCollection.isEmpty()) {
+            fillPieceCollection()
         }
-        return pieceBag.removeFirst().invoke()
+        return pieceCollection.removeFirst().invoke()
     }
 
     /**
-     * Spawns a new piece from the bag onto the game board.
+     * Spawns a new piece from the collection onto the game board.
      * This will be called by the GameLoop when a piece locks and a new one is needed.
      */
     fun spawnNewPiece() {
         if (_gameState.value.gameOver) return
 
-        val nextPiece = getNextPieceFromBag()
+        val nextPiece = getNextPieceFromCollection()
         // spawnSpecificPiece is expected to return a state with gameOver=true if spawning fails
         _gameState.value = gameEngine.spawnSpecificPiece(_gameState.value, nextPiece)
 
@@ -73,10 +73,10 @@ class GameViewModel(
     fun startNewGame() {
         gameLoop?.stopGameLoop()
         softDropJob?.cancel()
-        fillPieceBag()
+        fillPieceCollection()
 
         var initialState = gameEngine.resetGame()
-        val firstPiece = getNextPieceFromBag()
+        val firstPiece = getNextPieceFromCollection()
         // spawnSpecificPiece updates initialState, potentially setting gameOver=true
         initialState = gameEngine.spawnSpecificPiece(initialState, firstPiece)
 
