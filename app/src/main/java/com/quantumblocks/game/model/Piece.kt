@@ -19,6 +19,7 @@ sealed class Piece {
      * Rotates the piece 90 degrees clockwise around its center.
      * Default implementation applies to all but O piece which overrides to no-op.
      */
+    //TODO: Evaluate options for this open function
     open fun rotate(): Piece {
         val rotatedBlocks = blocks.map { blockPosition ->
             val relativePos = blockPosition - center
