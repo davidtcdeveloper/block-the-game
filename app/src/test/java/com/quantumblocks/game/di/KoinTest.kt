@@ -13,28 +13,27 @@ import kotlin.test.assertNotNull
  * Simple test to verify Koin dependency injection is working
  */
 class KoinTest : KoinTest {
-    
     @Test
     fun testGameEngineInjection() {
         startKoin {
             modules(appModule)
         }
-        
+
         val gameEngine: GameEngine = get()
         assertNotNull(gameEngine, "GameEngine should be injected")
-        
+
         stopKoin()
     }
-    
+
     @Test
     fun testGameViewModelInjection() {
         startKoin {
             modules(appModule)
         }
-        
+
         val gameViewModel: GameViewModel = get()
         assertNotNull(gameViewModel, "GameViewModel should be injected")
-        
+
         stopKoin()
     }
 }

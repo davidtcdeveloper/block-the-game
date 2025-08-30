@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ktlint)
 }
 
 android {
@@ -26,7 +27,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -53,6 +54,16 @@ android {
 composeCompiler {
     reportsDestination = layout.buildDirectory.dir("compose_compiler")
     stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
+}
+
+ktlint {
+    android.set(true)
+    outputToConsole.set(true)
+    ignoreFailures.set(false)
+    filter {
+        exclude("**/generated/**")
+        include("**/kotlin/**", "**/java/**")
+    }
 }
 
 dependencies {

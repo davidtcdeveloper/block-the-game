@@ -19,10 +19,9 @@ private const val SOFT_DROP_DELAY_MS = 50L
  * ViewModel that manages the game state and user interactions
  */
 class GameViewModel(
-    private val gameEngine: GameEngine, //TODO: Review if we need both engine and loop here
-    private val gameLoopFactory: (MutableStateFlow<GameState>, () -> Unit) -> GameLoop
+    private val gameEngine: GameEngine, // TODO: Review if we need both engine and loop here
+    private val gameLoopFactory: (MutableStateFlow<GameState>, () -> Unit) -> GameLoop,
 ) : ViewModel() {
-
     private var softDropJob: Job? = null
     private var gameLoop: GameLoop? = null
 
@@ -133,17 +132,18 @@ class GameViewModel(
             return
         }
         softDropJob?.cancel()
-        softDropJob = viewModelScope.launch {
-            while (true) {
-                delay(SOFT_DROP_DELAY_MS)
-                if (_gameState.value.gameOver) {
-                    break
+        softDropJob =
+            viewModelScope.launch {
+                while (true) {
+                    delay(SOFT_DROP_DELAY_MS)
+                    if (_gameState.value.gameOver) {
+                        break
+                    }
+                    val newState = gameEngine.movePieceDown(_gameState.value)
+                    _gameState.value = newState
+                    // GameLoop will handle calling spawnNewPiece if needsNewPiece is set in newState
                 }
-                val newState = gameEngine.movePieceDown(_gameState.value)
-                _gameState.value = newState
-                // GameLoop will handle calling spawnNewPiece if needsNewPiece is set in newState
             }
-        }
     }
 
     /**

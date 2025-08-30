@@ -40,3 +40,4 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version = "13.1.0" }

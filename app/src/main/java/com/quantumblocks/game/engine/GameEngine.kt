@@ -12,13 +12,15 @@ private const val LEVEL_SPEED_MULTIPLIER = 0.9f
  * Game engine that handles the core game logic
  */
 class GameEngine {
-
     /**
      * Attempts to spawn the given piece onto the board.
      * If the piece cannot be placed (e.g., no space), it sets gameOver to true.
      * This also resets the needsNewPiece flag from the GameState.
      */
-    fun spawnSpecificPiece(gameState: GameState, piece: Piece): GameState {
+    fun spawnSpecificPiece(
+        gameState: GameState,
+        piece: Piece,
+    ): GameState {
         // The piece comes with its initial position from the Piece factory
         return if (gameState.canPlacePiece(piece)) {
             gameState.copy(currentPiece = piece, gameOver = false, needsNewPiece = false)
@@ -112,9 +114,7 @@ class GameEngine {
     /**
      * Calculates the fall delay based on the current level.
      */
-    fun getFallDelay(level: Int): Long {
-        return (INITIAL_FALL_DELAY_MS * (LEVEL_SPEED_MULTIPLIER.pow(level - 1))).toLong()
-    }
+    fun getFallDelay(level: Int): Long = (INITIAL_FALL_DELAY_MS * (LEVEL_SPEED_MULTIPLIER.pow(level - 1))).toLong()
 
     /**
      * Resets the game to an initial empty state.

@@ -14,29 +14,29 @@ import kotlinx.coroutines.launch
 class GameLoop(
     private val gameEngine: GameEngine,
     private val gameStateFlow: MutableStateFlow<GameState>,
-    //TODO: move away from this callback
+    // TODO: move away from this callback
     private val spawnNewPieceCallback: () -> Unit, // Callback to request a new piece
     coroutineScope: CoroutineScope,
     dispatcher: CoroutineDispatcher,
 ) {
+    private var gameJob: Job =
+        coroutineScope.launch(dispatcher) {
+            while (!gameStateFlow.value.gameOver) {
+                val fallDelay = gameEngine.getFallDelay(gameStateFlow.value.level)
+                delay(fallDelay)
 
-    private var gameJob: Job = coroutineScope.launch(dispatcher) {
-        while (!gameStateFlow.value.gameOver) {
-            val fallDelay = gameEngine.getFallDelay(gameStateFlow.value.level)
-            delay(fallDelay)
+                if (!gameStateFlow.value.gameOver) {
+                    // Move piece down and update state
+                    val nextState = gameEngine.movePieceDown(gameStateFlow.value)
+                    gameStateFlow.value = nextState
 
-            if (!gameStateFlow.value.gameOver) {
-                // Move piece down and update state
-                val nextState = gameEngine.movePieceDown(gameStateFlow.value)
-                gameStateFlow.value = nextState
-
-                // If the piece locked and a new one is needed (and game is not over from locking)
-                if (nextState.needsNewPiece && !nextState.gameOver) {
-                    spawnNewPieceCallback() // ViewModel will update gameStateFlow via GameEngine
+                    // If the piece locked and a new one is needed (and game is not over from locking)
+                    if (nextState.needsNewPiece && !nextState.gameOver) {
+                        spawnNewPieceCallback() // ViewModel will update gameStateFlow via GameEngine
+                    }
                 }
             }
         }
-    }
 
     /**
      * Stops the game loop
@@ -44,11 +44,9 @@ class GameLoop(
     fun stopGameLoop() {
         gameJob.cancel()
     }
-    
+
     /**
      * Checks if the game loop is currently running
      */
-    fun isRunning(): Boolean {
-        return gameJob.isActive
-    }
+    fun isRunning(): Boolean = gameJob.isActive
 }

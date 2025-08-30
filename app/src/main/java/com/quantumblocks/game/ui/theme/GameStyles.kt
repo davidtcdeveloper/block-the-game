@@ -2,7 +2,6 @@ package com.quantumblocks.game.ui.theme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -24,7 +23,7 @@ object GameColors {
     val Black = Color.Black
     val Gray = Color.Gray
     val Cyan = Color.Cyan
-    
+
     // Transparent colors
     val WhiteTransparent = Color.White.copy(alpha = 0.8f)
     val GrayTransparent = Color.Gray.copy(alpha = 0.3f)
@@ -53,7 +52,7 @@ object GameTypography {
     val BodyLarge = 18.sp
     val BodyMedium = 16.sp
     val BodySmall = 14.sp
-    
+
     val Bold = FontWeight.Bold
     val Medium = FontWeight.Medium
 }
@@ -63,27 +62,25 @@ object GameTypography {
  */
 object GameButtonStyles {
     @Composable
-    fun primaryButtonColors(): ButtonColors {
-        return ButtonDefaults.buttonColors(
+    fun primaryButtonColors(): ButtonColors =
+        ButtonDefaults.buttonColors(
             containerColor = GameColors.DarkGray,
-            contentColor = GameColors.White
+            contentColor = GameColors.White,
         )
-    }
-
 
     @Composable
-    fun secondaryButtonColors(): ButtonColors {
-        return ButtonDefaults.buttonColors(
+    fun secondaryButtonColors(): ButtonColors =
+        ButtonDefaults.buttonColors(
             containerColor = GameColors.Blue,
-            contentColor = GameColors.White
+            contentColor = GameColors.White,
         )
-    }
 
     @Composable
-    fun primaryElevation() = ButtonDefaults.buttonElevation(
-        defaultElevation = 4.dp,
-        pressedElevation = 2.dp
-    )
+    fun primaryElevation() =
+        ButtonDefaults.buttonElevation(
+            defaultElevation = 4.dp,
+            pressedElevation = 2.dp,
+        )
 }
 
 /**
@@ -94,14 +91,14 @@ object GameTextStyles {
     fun titleLarge(
         text: String,
         modifier: Modifier = Modifier,
-        textAlign: TextAlign = TextAlign.Center
+        textAlign: TextAlign = TextAlign.Center,
     ) {
         Text(
             text = text,
             fontSize = GameTypography.TitleLarge,
             fontWeight = GameTypography.Bold,
             textAlign = textAlign,
-            modifier = modifier
+            modifier = modifier,
         )
     }
 
@@ -109,62 +106,62 @@ object GameTextStyles {
     fun titleMedium(
         text: String,
         modifier: Modifier = Modifier,
-        textAlign: TextAlign = TextAlign.Center
+        textAlign: TextAlign = TextAlign.Center,
     ) {
         Text(
             text = text,
             fontSize = GameTypography.TitleMedium,
             fontWeight = GameTypography.Bold,
             textAlign = textAlign,
-            modifier = modifier
+            modifier = modifier,
         )
     }
-    
+
     @Composable
     fun bodyLarge(
         text: String,
         modifier: Modifier = Modifier,
         textAlign: TextAlign = TextAlign.Center,
-        fontWeight: FontWeight = GameTypography.Medium
+        fontWeight: FontWeight = GameTypography.Medium,
     ) {
         Text(
             text = text,
             fontSize = GameTypography.BodyLarge,
             fontWeight = fontWeight,
             textAlign = textAlign,
-            modifier = modifier
+            modifier = modifier,
         )
     }
-    
+
     @Composable
     fun bodyMedium(
         text: String,
         modifier: Modifier = Modifier,
         textAlign: TextAlign = TextAlign.Center,
-        fontWeight: FontWeight = FontWeight.Normal
+        fontWeight: FontWeight = FontWeight.Normal,
     ) {
         Text(
             text = text,
             fontSize = GameTypography.BodyMedium,
             fontWeight = fontWeight,
             textAlign = textAlign,
-            modifier = modifier
+            modifier = modifier,
         )
     }
-    
+
     @Composable
     fun bodySmall(
         text: String,
         modifier: Modifier = Modifier,
         textAlign: TextAlign = TextAlign.Center,
-        color: Color = GameColors.WhiteTransparent
+        color: Color = GameColors.WhiteTransparent,
     ) {
         Text(
             text = text,
             fontSize = GameTypography.BodySmall,
             color = color,
             textAlign = textAlign,
-            modifier = modifier
+            modifier = modifier,
         )
     }
 }
@@ -174,23 +171,19 @@ object GameTextStyles {
  */
 object GameModifiers {
     @Composable
-    fun cardBackground(): Modifier {
-        return Modifier.background(
+    fun cardBackground(): Modifier =
+        Modifier.background(
             color = GameColors.DarkGray,
-            shape = RoundedCornerShape(GameSpacing.CardCornerRadius)
+            shape = RoundedCornerShape(GameSpacing.CardCornerRadius),
         )
-    }
-    
+
     @Composable
-    fun dialogBackground(): Modifier {
-        return Modifier.background(
+    fun dialogBackground(): Modifier =
+        Modifier.background(
             color = GameColors.White,
-            shape = RoundedCornerShape(GameSpacing.DialogCornerRadius)
+            shape = RoundedCornerShape(GameSpacing.DialogCornerRadius),
         )
-    }
-    
+
     @Composable
-    fun gameBoardBorder(): Modifier {
-        return Modifier.background(GameColors.Black)
-    }
+    fun gameBoardBorder(): Modifier = Modifier.background(GameColors.Black)
 }

@@ -27,34 +27,36 @@ import com.quantumblocks.game.ui.theme.GameSpacing
 @Composable
 fun GameBoard(
     gameState: GameState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val boardHeight = gameState.boardHeight
     val boardWidth = gameState.boardWidth
-    
+
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .aspectRatio(boardWidth.toFloat() / boardHeight.toFloat())
-            .background(GameColors.Black)
-            .border(GameSpacing.BorderWidth, GameColors.Gray)
-            .padding(GameSpacing.BorderWidth),
-        contentAlignment = Alignment.Center
-    ) {
-        Canvas(
-            modifier = Modifier
+        modifier =
+            modifier
                 .fillMaxWidth()
                 .aspectRatio(boardWidth.toFloat() / boardHeight.toFloat())
+                .background(GameColors.Black)
+                .border(GameSpacing.BorderWidth, GameColors.Gray)
+                .padding(GameSpacing.BorderWidth),
+        contentAlignment = Alignment.Center,
+    ) {
+        Canvas(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(boardWidth.toFloat() / boardHeight.toFloat()),
         ) {
             val cellWidth = size.width / boardWidth
             val cellHeight = size.height / boardHeight
-            
+
             // Draw grid lines
             drawGrid(boardWidth, boardHeight, cellWidth, cellHeight)
-            
+
             // Draw locked blocks
             drawLockedBlocks(gameState.board, cellWidth, cellHeight)
-            
+
             // Draw current piece if it exists
             gameState.currentPiece?.let { piece ->
                 drawPiece(piece, cellWidth, cellHeight)
@@ -70,10 +72,10 @@ private fun DrawScope.drawGrid(
     boardWidth: Int,
     boardHeight: Int,
     cellWidth: Float,
-    cellHeight: Float
+    cellHeight: Float,
 ) {
     val gridColor = GameColors.GrayTransparent
-    
+
     // Draw vertical lines
     for (col in 0..boardWidth) {
         val x = col * cellWidth
@@ -81,10 +83,10 @@ private fun DrawScope.drawGrid(
             color = gridColor,
             start = Offset(x, 0f),
             end = Offset(x, size.height),
-            strokeWidth = 1f
+            strokeWidth = 1f,
         )
     }
-    
+
     // Draw horizontal lines
     for (row in 0..boardHeight) {
         val y = row * cellHeight
@@ -92,7 +94,7 @@ private fun DrawScope.drawGrid(
             color = gridColor,
             start = Offset(0f, y),
             end = Offset(size.width, y),
-            strokeWidth = 1f
+            strokeWidth = 1f,
         )
     }
 }
@@ -103,29 +105,29 @@ private fun DrawScope.drawGrid(
 private fun DrawScope.drawLockedBlocks(
     board: List<List<Boolean>>,
     cellWidth: Float,
-    cellHeight: Float
+    cellHeight: Float,
 ) {
     // For now, locked blocks are a single color as per previous iterations.
-    val blockColor = GameColors.Blue 
-    
+    val blockColor = GameColors.Blue
+
     board.forEachIndexed { row, rowData ->
         rowData.forEachIndexed { col, hasBlock ->
             if (hasBlock) {
                 val x = col * cellWidth
                 val y = row * cellHeight
-                
+
                 drawRect(
                     color = blockColor,
                     topLeft = Offset(x, y),
-                    size = Size(cellWidth, cellHeight)
+                    size = Size(cellWidth, cellHeight),
                 )
-                
+
                 // Draw block border
                 drawRect(
                     color = GameColors.White,
                     topLeft = Offset(x, y),
                     size = Size(cellWidth, cellHeight),
-                    style = Stroke(width = 1f)
+                    style = Stroke(width = 1f),
                 )
             }
         }
@@ -138,28 +140,28 @@ private fun DrawScope.drawLockedBlocks(
 private fun DrawScope.drawPiece(
     piece: com.quantumblocks.game.model.Piece,
     cellWidth: Float,
-    cellHeight: Float
+    cellHeight: Float,
 ) {
     val pieceColor = piece.color
-    
+
     piece.blocks.forEach { position ->
         val x = position.col * cellWidth
         val y = position.row * cellHeight
-        
+
         // Only draw if the block is visible on the board
         if (position.row >= 0 && position.col >= 0) {
             drawRect(
                 color = pieceColor,
                 topLeft = Offset(x, y),
-                size = Size(cellWidth, cellHeight)
+                size = Size(cellWidth, cellHeight),
             )
-            
+
             // Draw piece border
             drawRect(
                 color = GameColors.White, // Consider a contrasting border or remove if colors are distinct enough
                 topLeft = Offset(x, y),
                 size = Size(cellWidth, cellHeight),
-                style = Stroke(width = 2f)
+                style = Stroke(width = 2f),
             )
         }
     }
@@ -172,7 +174,7 @@ private fun DrawScope.drawPiece(
 @Composable
 fun GameBoardEmptyPreview() {
     GameBoard(
-        gameState = GameState()
+        gameState = GameState(),
     )
 }
 
@@ -183,20 +185,22 @@ fun GameBoardEmptyPreview() {
 @Composable
 fun GameBoardWithBlocksPreview() {
     // Create a game state with some locked blocks
-    val boardWithBlocks = List(20) { row ->
-        List(10) { col ->
-            // Add some blocks in the bottom rows
-            row >= 18 && col in 3..6
+    val boardWithBlocks =
+        List(20) { row ->
+            List(10) { col ->
+                // Add some blocks in the bottom rows
+                row >= 18 && col in 3..6
+            }
         }
-    }
-    
+
     // Create a sample piece for previewing
     val samplePiece = Piece.createTPiece().move(Position(5, 3))
-    
-    val gameState = GameState(
-        board = boardWithBlocks,
-        currentPiece = samplePiece
-    )
-    
+
+    val gameState =
+        GameState(
+            board = boardWithBlocks,
+            currentPiece = samplePiece,
+        )
+
     GameBoard(gameState = gameState)
 }

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,39 +25,40 @@ import org.koin.androidx.compose.koinViewModel
  * Main game screen that displays the game board, controls, and score
  */
 @Composable
-fun GameScreen(
-    viewModel: GameViewModel = koinViewModel()
-) {
+fun GameScreen(viewModel: GameViewModel = koinViewModel()) {
     val gameState by viewModel.gameState.collectAsState()
-    
+
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(Color.Black),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.SpaceBetween,
         ) {
             // Score Display at the top
             ScoreDisplay(
                 score = gameState.score,
                 level = gameState.level,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
-            
+
             // Game Board in the center
             GameBoard(
                 gameState = gameState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(vertical = 16.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(vertical = 16.dp),
             )
-            
+
             // Control Panel at the bottom
             ControlPanel(
                 onMoveLeft = { viewModel.onMoveLeft() },
@@ -67,16 +67,16 @@ fun GameScreen(
                 onDrop = { viewModel.onDrop() },
                 onDropStart = { viewModel.onDropStart() },
                 onDropEnd = { viewModel.onDropEnd() },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
         }
-        
+
         // Game Over Dialog
         if (gameState.gameOver) {
             GameOverDialog(
                 score = gameState.score,
                 level = gameState.level,
-                onRestart = { viewModel.startNewGame() }
+                onRestart = { viewModel.startNewGame() },
             )
         }
     }

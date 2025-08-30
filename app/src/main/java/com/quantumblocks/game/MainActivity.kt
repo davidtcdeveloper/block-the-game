@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
             QuantumBlocksTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background,
                 ) {
                     GameScreen()
                 }
