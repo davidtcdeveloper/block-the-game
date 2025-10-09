@@ -35,18 +35,13 @@ fun GameBoard(
     Box(
         modifier =
             modifier
-                .fillMaxWidth()
-                .aspectRatio(boardWidth.toFloat() / boardHeight.toFloat())
                 .background(GameColors.Black)
                 .border(GameSpacing.BorderWidth, GameColors.Gray)
                 .padding(GameSpacing.BorderWidth),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(boardWidth.toFloat() / boardHeight.toFloat()),
+            modifier = Modifier.matchParentSize(),
         ) {
             val cellWidth = size.width / boardWidth
             val cellHeight = size.height / boardHeight
