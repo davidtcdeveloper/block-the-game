@@ -11,6 +11,7 @@ private const val LEVEL_SPEED_MULTIPLIER = 0.9f
 /**
  * Game engine that processes commands and updates game state.
  * Implements a state machine where commands transition the game from one state to another.
+ * The engine is stateless - all state is stored in GameState.
  */
 class GameEngine {
     /**
@@ -24,7 +25,7 @@ class GameEngine {
             is GameCommand.MoveRightCommand -> handleMoveRight(currentState)
             is GameCommand.MoveDownCommand -> handleMoveDown(currentState)
             is GameCommand.RotateCommand -> handleRotate(currentState)
-            is GameCommand.SpawnPieceCommand -> handleSpawnPiece(currentState, command.piece)
+            is GameCommand.SpawnPieceCommand -> handleSpawnPiece(currentState)
             is GameCommand.StartGameCommand -> currentState // StartGame handled by ViewModel logic
             is GameCommand.ResetGameCommand -> handleResetGame()
             is GameCommand.SoftDropStartCommand -> handleSoftDropStart(currentState)
@@ -69,9 +70,32 @@ class GameEngine {
 
     /**
      * Handles spawn piece command.
+     * Reads the nextPiece from state and spawns it.
+     * If nextPiece is null, generates one from the collection in state.
      */
-    private fun handleSpawnPiece(gameState: GameState, piece: Piece): GameState {
-        return spawnSpecificPiece(gameState, piece)
+    private fun handleSpawnPiece(gameState: GameState): GameState {
+        val pieceToSpawn: Piece
+        val stateAfterGettingPiece: GameState
+        
+        if (gameState.nextPiece != null) {
+            // Use the nextPiece from state
+            pieceToSpawn = gameState.nextPiece
+            stateAfterGettingPiece = gameState.copy(nextPiece = null)
+        } else {
+            // Generate from collection (first spawn case)
+            val (piece, updatedState) = gameState.getNextPieceFromCollection()
+            pieceToSpawn = piece
+            stateAfterGettingPiece = updatedState
+        }
+        
+        // Spawn the piece
+        val stateAfterSpawn = spawnSpecificPiece(stateAfterGettingPiece, pieceToSpawn)
+        
+        // Generate the next nextPiece for future spawn
+        val (nextNextPiece, stateWithNextPiece) = stateAfterSpawn.getNextPieceFromCollection()
+        
+        // Return state with spawned piece and new nextPiece
+        return stateWithNextPiece.copy(nextPiece = nextNextPiece)
     }
 
     /**
@@ -131,8 +155,11 @@ class GameEngine {
             // Piece can't move down, lock it in place.
             // placePiece in GameState will set needsNewPiece = true
             val newStateWithPlacedPiece = gameState.placePiece(currentPiece)
-            // Then clear any completed lines.
-            newStateWithPlacedPiece.clearLines()
+            // Clear any completed lines.
+            val stateAfterClearLines = newStateWithPlacedPiece.clearLines()
+            // Generate the next piece from collection and store it in state
+            val (nextPiece, stateWithNextPiece) = stateAfterClearLines.getNextPieceFromCollection()
+            stateWithNextPiece.copy(nextPiece = nextPiece)
         }
     }
 
@@ -199,10 +226,14 @@ class GameEngine {
 
     /**
      * Resets the game to an initial empty state.
-     * The first piece will be spawned by GameViewModel.
+     * Fills the piece collection and generates the first nextPiece so it's ready for the first spawn.
      */
     private fun resetGame(): GameState {
-        // Returns a GameState with an empty board, score 0, level 1, no current piece, and not needing a new piece.
-        return GameState()
+        // Create initial state with filled piece collection
+        val initialState = GameState().withFilledPieceCollection()
+        // Generate the first nextPiece for the new game
+        val (firstNextPiece, stateWithCollection) = initialState.getNextPieceFromCollection()
+        // Returns a GameState with an empty board, score 0, level 1, no current piece, and the first nextPiece.
+        return stateWithCollection.copy(nextPiece = firstNextPiece)
     }
 }

@@ -1,7 +1,5 @@
 package com.quantumblocks.game.engine
 
-import com.quantumblocks.game.model.Piece
-
 /**
  * Sealed interface representing all game commands.
  * Commands are processed by GameEngine to update game state.
@@ -22,8 +20,8 @@ sealed interface GameCommand {
     /** Rotate current piece 90 degrees clockwise */
     data object RotateCommand : GameCommand
 
-    /** Spawn a new piece onto the board */
-    data class SpawnPieceCommand(val piece: Piece) : GameCommand
+    /** Spawn a new piece onto the board (uses nextPiece from state) */
+    data object SpawnPieceCommand : GameCommand
 
     /** Start a new game */
     data object StartGameCommand : GameCommand

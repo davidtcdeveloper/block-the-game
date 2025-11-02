@@ -14,6 +14,8 @@ data class GameState(
     val level: Int = 1,
     val needsNewPiece: Boolean = false, // Flag to indicate a new piece should be spawned
     val softDropActive: Boolean = false, // Flag to indicate soft drop is active
+    val nextPiece: Piece? = null, // The piece that will be spawned next
+    val pieceCollection: List<() -> Piece> = emptyList(), // Current piece collection (bag system)
 ) {
     val boardHeight: Int get() = board.size
     val boardWidth: Int get() = board[0].size
@@ -75,6 +77,35 @@ data class GameState(
             board = newBoard.map { it.toList() }, // Ensure immutability
             score = newScore,
             level = newLevel,
+        )
+    }
+
+    /**
+     * Creates a new state with a filled piece collection.
+     * Used when initializing or refilling the piece bag.
+     */
+    fun withFilledPieceCollection(): GameState {
+        val allFactories = Piece.getAllPieceFactories()
+        return copy(pieceCollection = allFactories.shuffled())
+    }
+
+    /**
+     * Gets the next piece from the collection and returns it along with updated state.
+     * If the collection is empty, it refills it first.
+     */
+    fun getNextPieceFromCollection(): Pair<Piece, GameState> {
+        val collection = if (pieceCollection.isEmpty()) {
+            Piece.getAllPieceFactories().shuffled()
+        } else {
+            pieceCollection
+        }
+        
+        val nextPieceFactory = collection.first()
+        val remainingCollection = collection.drop(1)
+        
+        return Pair(
+            nextPieceFactory(),
+            copy(pieceCollection = remainingCollection)
         )
     }
 }
