@@ -2,36 +2,45 @@ package com.quantumblocks.game.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.quantumblocks.game.engine.GameCommand
 import com.quantumblocks.game.engine.GameEngine
 import com.quantumblocks.game.engine.GameLoop
 import com.quantumblocks.game.model.GameState
+import com.quantumblocks.game.model.GameStateHolder
 import com.quantumblocks.game.model.Piece
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 private const val SOFT_DROP_DELAY_MS = 50L
 
 /**
- * ViewModel that manages the game state and user interactions
+ * ViewModel that translates UI events to game commands and manages piece collection.
+ * Observes game state to spawn new pieces when needed.
  */
 class GameViewModel(
-    private val gameEngine: GameEngine, // TODO: Review if we need both engine and loop here
-    private val gameLoopFactory: (MutableStateFlow<GameState>, () -> Unit) -> GameLoop,
+    private val gameEngine: GameEngine,
+    private val gameLoopFactory: () -> GameLoop,
+    private val gameStateHolder: GameStateHolder,
 ) : ViewModel() {
     private var softDropJob: Job? = null
     private var gameLoop: GameLoop? = null
 
-    private val _gameState = MutableStateFlow(GameState())
-    val gameState: StateFlow<GameState> = _gameState.asStateFlow()
+    val gameState: StateFlow<GameState> = gameStateHolder.state
 
     private val pieceFactories = Piece.getAllPieceFactories()
     private var pieceCollection: MutableList<() -> Piece> = mutableListOf()
 
     init {
+        // Observe state to spawn new pieces when needed
+        viewModelScope.launch {
+            gameState.collect { state ->
+                if (state.needsNewPiece && !state.gameOver) {
+                    spawnNewPiece()
+                }
+            }
+        }
         startNewGame()
     }
 
@@ -48,19 +57,28 @@ class GameViewModel(
     }
 
     /**
-     * Spawns a new piece from the collection onto the game board.
-     * This will be called by the GameLoop when a piece locks and a new one is needed.
+     * Sends a command to the engine and updates the state holder.
      */
-    fun spawnNewPiece() {
-        if (_gameState.value.gameOver) return
+    private fun sendCommand(command: GameCommand) {
+        val currentState = gameStateHolder.getCurrentState()
+        val newState = gameEngine.processCommand(command, currentState)
+        gameStateHolder.updateState(newState)
+    }
+
+    /**
+     * Spawns a new piece from the collection onto the game board.
+     * Called when a piece locks and needsNewPiece is true.
+     */
+    private fun spawnNewPiece() {
+        val currentState = gameStateHolder.getCurrentState()
+        if (currentState.gameOver) return
 
         val nextPiece = getNextPieceFromCollection()
-        // spawnSpecificPiece is expected to return a state with gameOver=true if spawning fails
-        _gameState.value = gameEngine.spawnSpecificPiece(_gameState.value, nextPiece)
+        sendCommand(GameCommand.SpawnPieceCommand(nextPiece))
 
-        // If the new piece immediately caused a game over (handled by spawnSpecificPiece),
-        // ensure game loop and soft drop are stopped.
-        if (_gameState.value.gameOver) {
+        // If the new piece immediately caused a game over, stop game loop and soft drop
+        val stateAfterSpawn = gameStateHolder.getCurrentState()
+        if (stateAfterSpawn.gameOver) {
             gameLoop?.stopGameLoop()
             softDropJob?.cancel()
         }
@@ -74,21 +92,18 @@ class GameViewModel(
         softDropJob?.cancel()
         fillPieceCollection()
 
-        var initialState = gameEngine.resetGame()
-        val firstPiece = getNextPieceFromCollection()
-        // spawnSpecificPiece updates initialState, potentially setting gameOver=true
-        initialState = gameEngine.spawnSpecificPiece(initialState, firstPiece)
+        // Reset game state
+        sendCommand(GameCommand.ResetGameCommand)
 
-        _gameState.value = initialState
+        // Spawn first piece
+        val firstPiece = getNextPieceFromCollection()
+        sendCommand(GameCommand.SpawnPieceCommand(firstPiece))
 
         // Check if the game is over after attempting to spawn the first piece
-        if (_gameState.value.gameOver) {
-            // Game over on start, do not start game loop
-        } else {
-            // Pass the spawnNewPiece function reference to the GameLoop
-            gameLoop = gameLoopFactory(_gameState, ::spawnNewPiece)
-            // GameLoop should be started here if not started by its factory/constructor
-            // For now, assuming factory handles GameLoop start or it's started elsewhere if needed.
+        val stateAfterSpawn = gameStateHolder.getCurrentState()
+        if (!stateAfterSpawn.gameOver) {
+            // Create and start new game loop (starts automatically in constructor)
+            gameLoop = gameLoopFactory()
         }
     }
 
@@ -96,52 +111,57 @@ class GameViewModel(
      * Handles move left button press
      */
     fun onMoveLeft() {
-        if (_gameState.value.gameOver) return
-        _gameState.value = gameEngine.movePieceLeft(_gameState.value)
+        val currentState = gameStateHolder.getCurrentState()
+        if (currentState.gameOver) return
+        sendCommand(GameCommand.MoveLeftCommand)
     }
 
     /**
      * Handles move right button press
      */
     fun onMoveRight() {
-        if (_gameState.value.gameOver) return
-        _gameState.value = gameEngine.movePieceRight(_gameState.value)
+        val currentState = gameStateHolder.getCurrentState()
+        if (currentState.gameOver) return
+        sendCommand(GameCommand.MoveRightCommand)
     }
 
     /**
      * Handles rotate button press
      */
     fun onRotate() {
-        if (_gameState.value.gameOver) return
-        _gameState.value = gameEngine.rotatePiece(_gameState.value)
+        val currentState = gameStateHolder.getCurrentState()
+        if (currentState.gameOver) return
+        sendCommand(GameCommand.RotateCommand)
     }
 
     /**
-     * Handles drop button press (soft drop)
+     * Handles drop button press (moves piece down once)
      */
     fun onDrop() {
-        if (_gameState.value.gameOver) return
-        _gameState.value = gameEngine.movePieceDown(_gameState.value)
+        val currentState = gameStateHolder.getCurrentState()
+        if (currentState.gameOver) return
+        sendCommand(GameCommand.MoveDownCommand)
     }
 
     /**
      * Starts soft drop (rapid falling)
      */
     fun onDropStart() {
-        if (_gameState.value.gameOver) {
+        val currentState = gameStateHolder.getCurrentState()
+        if (currentState.gameOver) {
             return
         }
         softDropJob?.cancel()
+        sendCommand(GameCommand.SoftDropStartCommand)
         softDropJob =
             viewModelScope.launch {
                 while (true) {
                     delay(SOFT_DROP_DELAY_MS)
-                    if (_gameState.value.gameOver) {
+                    val state = gameStateHolder.getCurrentState()
+                    if (state.gameOver || !state.softDropActive) {
                         break
                     }
-                    val newState = gameEngine.movePieceDown(_gameState.value)
-                    _gameState.value = newState
-                    // GameLoop will handle calling spawnNewPiece if needsNewPiece is set in newState
+                    sendCommand(GameCommand.MoveDownCommand)
                 }
             }
     }
@@ -150,6 +170,7 @@ class GameViewModel(
      * Stops soft drop
      */
     fun onDropEnd() {
+        sendCommand(GameCommand.SoftDropStopCommand)
         softDropJob?.cancel()
         softDropJob = null
     }

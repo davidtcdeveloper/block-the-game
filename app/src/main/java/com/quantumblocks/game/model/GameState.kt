@@ -13,6 +13,7 @@ data class GameState(
     val score: Int = 0,
     val level: Int = 1,
     val needsNewPiece: Boolean = false, // Flag to indicate a new piece should be spawned
+    val softDropActive: Boolean = false, // Flag to indicate soft drop is active
 ) {
     val boardHeight: Int get() = board.size
     val boardWidth: Int get() = board[0].size

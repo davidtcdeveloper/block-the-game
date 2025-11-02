@@ -2,13 +2,12 @@ package com.quantumblocks.game.di
 
 import com.quantumblocks.game.engine.GameEngine
 import com.quantumblocks.game.engine.GameLoop
-import com.quantumblocks.game.model.GameState
+import com.quantumblocks.game.model.GameStateHolder
 import com.quantumblocks.game.viewmodel.GameViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -20,9 +19,14 @@ val appModule =
             GameEngine()
         }
 
-        // Coroutine scope for game loop and viewmodel
+        // Singleton instance of GameStateHolder - single source of truth for game state
+        single<GameStateHolder> {
+            GameStateHolder()
+        }
+
+        // Coroutine scope for game loop
         single<CoroutineScope> {
-            CoroutineScope(SupervisorJob() + Dispatchers.Main)
+            CoroutineScope(SupervisorJob() + Dispatchers.Default)
         }
 
         // Coroutine dispatcher for game loop
@@ -31,16 +35,12 @@ val appModule =
         }
 
         // Factory function for creating GameLoop instances
-        // This provides the factory function itself, which GameViewModel will inject.
-        factory<(MutableStateFlow<GameState>, () -> Unit) -> GameLoop> {
-            // This outer lambda is what Koin calls to get the factory function.
-            // It returns a function that matches GameViewModel's dependency.
-            { gameStateFlow, spawnNewPieceCallback ->
-                // These are the parameters of the factory function
+        // Each game gets a new GameLoop instance that starts automatically
+        factory<() -> GameLoop> {
+            {
                 GameLoop(
                     get(), // GameEngine
-                    gameStateFlow, // MutableStateFlow<GameState>
-                    spawnNewPieceCallback, // The () -> Unit callback
+                    get(), // GameStateHolder
                     get(), // CoroutineScope for GameLoop
                     get(), // CoroutineDispatcher for GameLoop
                 )
@@ -51,7 +51,8 @@ val appModule =
         viewModel<GameViewModel> {
             GameViewModel(
                 get(), // GameEngine
-                get(), // CoroutineScope for GameViewModel
+                get(), // GameLoop factory
+                get(), // GameStateHolder
             )
         }
     }

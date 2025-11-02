@@ -1,38 +1,39 @@
 package com.quantumblocks.game.engine
 
-import com.quantumblocks.game.model.GameState
+import com.quantumblocks.game.model.GameStateHolder
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * Game loop that handles the automatic falling of pieces and triggers new piece spawning.
+ * Game loop that emits time-based tick commands to the game engine.
+ * Runs on a background dispatcher and automatically moves pieces down at level-based intervals.
  */
 class GameLoop(
     private val gameEngine: GameEngine,
-    private val gameStateFlow: MutableStateFlow<GameState>,
-    // TODO: move away from this callback
-    private val spawnNewPieceCallback: () -> Unit, // Callback to request a new piece
+    private val gameStateHolder: GameStateHolder,
     coroutineScope: CoroutineScope,
     dispatcher: CoroutineDispatcher,
 ) {
     private var gameJob: Job =
         coroutineScope.launch(dispatcher) {
-            while (!gameStateFlow.value.gameOver) {
-                val fallDelay = gameEngine.getFallDelay(gameStateFlow.value.level)
+            while (!gameStateHolder.getCurrentState().gameOver) {
+                val currentState = gameStateHolder.getCurrentState()
+                val fallDelay = gameEngine.getFallDelay(currentState.level)
                 delay(fallDelay)
 
-                if (!gameStateFlow.value.gameOver) {
-                    // Move piece down and update state
-                    val nextState = gameEngine.movePieceDown(gameStateFlow.value)
-                    gameStateFlow.value = nextState
+                val stateAfterDelay = gameStateHolder.getCurrentState()
+                if (!stateAfterDelay.gameOver) {
+                    // Emit TickCommand to engine and update state
+                    val nextState = gameEngine.processCommand(GameCommand.TickCommand, stateAfterDelay)
+                    gameStateHolder.updateState(nextState)
 
                     // If the piece locked and a new one is needed (and game is not over from locking)
+                    // The ViewModel will observe needsNewPiece and spawn the next piece
                     if (nextState.needsNewPiece && !nextState.gameOver) {
-                        spawnNewPieceCallback() // ViewModel will update gameStateFlow via GameEngine
+                        // Signal is handled by ViewModel observing the state
                     }
                 }
             }
