@@ -73,11 +73,15 @@ data class GameState(
         // Level up every 1000 points, ensure level is at least 1
         val newLevel = (newScore / 1000) + 1
 
-        return copy(
+        val stateAfterClearing = copy(
             board = newBoard.map { it.toList() }, // Ensure immutability
             score = newScore,
             level = newLevel,
         )
+
+        // Recursively check for more complete rows after clearing
+        // This handles cascading line clears where clearing rows may create new complete rows
+        return stateAfterClearing.clearLines()
     }
 
     /**
