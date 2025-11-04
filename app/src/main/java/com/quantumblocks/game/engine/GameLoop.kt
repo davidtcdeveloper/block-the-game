@@ -21,7 +21,7 @@ class GameLoop(
         coroutineScope.launch(dispatcher) {
             while (!gameStateHolder.getCurrentState().gameOver) {
                 val currentState = gameStateHolder.getCurrentState()
-                val fallDelay = gameEngine.getFallDelay(currentState.level)
+                val fallDelay = gameEngine.getFallDelay(currentState.score)
                 delay(fallDelay)
 
                 val stateAfterDelay = gameStateHolder.getCurrentState()

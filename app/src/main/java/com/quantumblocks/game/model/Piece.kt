@@ -134,6 +134,25 @@ sealed class Piece {
         ): Piece = copy(blocks = blocks, center = center)
     }
 
+    @Immutable
+    data class SingleBlockPiece(
+        override val blocks: List<Position>,
+        override val center: Position,
+    ) : Piece() {
+        // Color alternates based on row position: odd rows = light, even rows = dark
+        override val color: Color
+            get() = if (center.row % 2 == 0) {
+                Color(0xFFAAAAAA) // Light gray for even rows
+            } else {
+                Color(0xFF555555) // Dark gray for odd rows
+            }
+
+        override fun copyWith(
+            blocks: List<Position>,
+            center: Position,
+        ): Piece = copy(blocks = blocks, center = center)
+    }
+
     companion object {
         // Initial spawn offset for pieces (near top-center of a 10-wide board)
         private val SPAWN_OFFSET = Position(0, 4)
@@ -223,6 +242,12 @@ sealed class Piece {
                 center = Position(1, 1) + SPAWN_OFFSET,
             )
 
+        fun createSingleBlockPiece(): Piece =
+            SingleBlockPiece(
+                blocks = listOf(SPAWN_OFFSET),
+                center = SPAWN_OFFSET,
+            )
+
         /** Returns a list of all piece factory functions. */
         fun getAllPieceFactories(): List<() -> Piece> =
             listOf(
@@ -233,6 +258,7 @@ sealed class Piece {
                 ::createZPiece,
                 ::createJPiece,
                 ::createLPiece,
+                ::createSingleBlockPiece,
             )
     }
 }

@@ -76,7 +76,7 @@ class GameEngine {
     private fun handleSpawnPiece(gameState: GameState): GameState {
         val pieceToSpawn: Piece
         val stateAfterGettingPiece: GameState
-        
+
         if (gameState.nextPiece != null) {
             // Use the nextPiece from state
             pieceToSpawn = gameState.nextPiece
@@ -87,13 +87,13 @@ class GameEngine {
             pieceToSpawn = piece
             stateAfterGettingPiece = updatedState
         }
-        
+
         // Spawn the piece
         val stateAfterSpawn = spawnSpecificPiece(stateAfterGettingPiece, pieceToSpawn)
-        
+
         // Generate the next nextPiece for future spawn
         val (nextNextPiece, stateWithNextPiece) = stateAfterSpawn.getNextPieceFromCollection()
-        
+
         // Return state with spawned piece and new nextPiece
         return stateWithNextPiece.copy(nextPiece = nextNextPiece)
     }
@@ -154,9 +154,23 @@ class GameEngine {
         } else {
             // Piece can't move down, lock it in place.
             // placePiece in GameState will set needsNewPiece = true
+            val isSingleBlockPiece = currentPiece is Piece.SingleBlockPiece
             val newStateWithPlacedPiece = gameState.placePiece(currentPiece)
-            // Clear any completed lines.
-            val stateAfterClearLines = newStateWithPlacedPiece.clearLines()
+
+            // If it's a SingleBlockPiece, fill empty rows below before clearing lines
+            val stateAfterFilling = if (isSingleBlockPiece) {
+                fillEmptyRowsBelow(
+                    gameState = newStateWithPlacedPiece,
+                    placedRow = currentPiece.center.row,
+                    placedColumn = currentPiece.center.col
+                )
+            } else {
+                newStateWithPlacedPiece
+            }
+
+            // Clear any completed lines (this will also calculate score)
+            val stateAfterClearLines = stateAfterFilling.clearLines()
+
             // Generate the next piece from collection and store it in state
             val (nextPiece, stateWithNextPiece) = stateAfterClearLines.getNextPieceFromCollection()
             stateWithNextPiece.copy(nextPiece = nextPiece)
@@ -220,9 +234,27 @@ class GameEngine {
     }
 
     /**
-     * Calculates the fall delay based on the current level.
+     * Fills all completely empty rows below the specified row with single blocks (one per column).
+     * Only fills rows that are completely empty (all cells are false).
      */
-    fun getFallDelay(level: Int): Long = (INITIAL_FALL_DELAY_MS * (LEVEL_SPEED_MULTIPLIER.pow(level - 1))).toLong()
+    private fun fillEmptyRowsBelow(gameState: GameState, placedRow: Int, placedColumn: Int): GameState {
+        val newBoard = gameState.board.map { it.toMutableList() }.toMutableList()
+        // Start from the row below the placed piece
+        for (row in (placedRow + 1) until gameState.boardHeight) {
+            // Fill the entire row with single blocks (set all cells to true)
+            newBoard[row][placedColumn] = true
+        }
+        return gameState.copy(board = newBoard.map { it.toList() })
+    }
+
+    /**
+     * Calculates the fall delay based on the current score.
+     * Speed increases by 10% every time the score reaches a multiple of 1000.
+     */
+    fun getFallDelay(score: Int): Long {
+        val milestones = score / 1000 // Number of 1000-point milestones reached
+        return (INITIAL_FALL_DELAY_MS * (LEVEL_SPEED_MULTIPLIER.pow(milestones))).toLong()
+    }
 
     /**
      * Resets the game to an initial empty state.
